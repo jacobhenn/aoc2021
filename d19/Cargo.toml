@@ -1,0 +1,16 @@
+[package]
+name = "d19"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+# rudac = "0.8"
+# either = "1"
+derive_more = "0.99"
+log = "0.4"
+
+[dependencies.simple_logger]
+version = "2"
+default-features = false
+features = ["stderr"]
