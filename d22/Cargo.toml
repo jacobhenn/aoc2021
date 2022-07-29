@@ -9,6 +9,7 @@ anyhow = "1"
 # either = "1"
 derive_more = "0.99"
 log = "0.4"
+itertools = "0.10"
 
 [dependencies.simple_logger]
 version = "2"
