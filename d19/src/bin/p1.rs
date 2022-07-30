@@ -74,7 +74,7 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use aoc2021::d19::*;
+    use d19::*;
 
     // #[test]
     // fn orientations() {

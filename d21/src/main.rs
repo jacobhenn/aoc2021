@@ -1,17 +1,7 @@
-// use log::info;
+use anyhow::{Result, Context};
 
-use d21::Multiverse;
-
-// real data
-const P1_START: u8 = 6;
-const P2_START: u8 = 8;
-
-// test data
-// const P1_START: u8 = 3;
-// const P2_START: u8 = 7;
-
-fn main() {
-    let mut multiverse = Multiverse::new(P1_START, P2_START);
+fn main() -> Result<()> {
+    let mut multiverse = d21::get_input().context("couldn't get input")?;
     let mut p1_win_count = 0;
 
     let mut step = 0;
@@ -25,4 +15,6 @@ fn main() {
     }
 
     println!("{p1_win_count}");
+
+    Ok(())
 }

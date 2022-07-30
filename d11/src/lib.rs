@@ -6,6 +6,7 @@ use std::{
     fmt::Display,
     io::{BufRead, Lines},
     ops::{Deref, DerefMut},
+    fmt::Write,
 };
 
 pub const ROWS: usize = 10;
@@ -83,9 +84,9 @@ impl Display for Grid {
         let mut out = String::new();
         self.iter().for_each(|row| {
             row.iter().for_each(|num| {
-                out.push_str(&format!("{}", num));
+                write!(out, "{}", num).unwrap();
             });
-            out.push_str("\n");
+            writeln!(out).unwrap();
         });
         write!(f, "\n{}", out)
     }

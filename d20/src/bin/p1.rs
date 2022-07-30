@@ -13,7 +13,7 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use aoc2021::d20::*;
+    use d20::*;
 
     #[test]
     fn neighbors() {

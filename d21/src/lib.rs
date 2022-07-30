@@ -1,6 +1,8 @@
-use std::collections::{hash_map::Entry, BTreeMap, HashMap};
+use std::{collections::HashMap, io, str::FromStr};
 
 use derive_more::Display;
+
+use anyhow::{Context, Result};
 
 /// `ROLL_DIST[i]` = the number of universes in which the sum of three consecutive Dirac Dice rolls results in `i+3`.
 const BRANCH_DISTRIBUTION: &[u64; 7] = &[1, 3, 6, 7, 6, 3, 1];
@@ -11,6 +13,18 @@ pub struct PlayerState {
     /// position on the board from 0 to 9
     pub pos: u8,
     pub score: u8,
+}
+
+impl FromStr for PlayerState {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (_, pos) = s.split_once(": ").context("expected `: `")?;
+        Ok(PlayerState {
+            pos: pos.parse::<u8>().context("couldn't parse player position")? - 1,
+            score: 0,
+        })
+    }
 }
 
 impl PlayerState {
@@ -105,18 +119,9 @@ pub struct Multiverse {
 }
 
 impl Multiverse {
-    pub fn new(p1_pos: u8, p2_pos: u8) -> Self {
+    pub fn new(player1: PlayerState, player2: PlayerState) -> Self {
         let mut state_counts = HashMap::new();
-        let initial_state = GameState {
-            player1: PlayerState {
-                pos: p1_pos,
-                score: 0,
-            },
-            player2: PlayerState {
-                pos: p2_pos,
-                score: 0,
-            },
-        };
+        let initial_state = GameState { player1, player2 };
 
         state_counts.insert(initial_state, 1);
 
@@ -159,4 +164,17 @@ impl Multiverse {
     }
 }
 
-// 444356092776315
+pub fn get_input() -> Result<Multiverse> {
+    let mut lines = io::stdin().lines();
+    let p1 = lines
+        .next()
+        .context("input ended unexpectedly")??
+        .parse()
+        .context("couldn't parse player starting pos")?;
+    let p2 = lines
+        .next()
+        .context("input ended unexpectedly")??
+        .parse()
+        .context("couldn't parse player starting pos")?;
+    Ok(Multiverse::new(p1, p2))
+}
