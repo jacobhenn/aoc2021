@@ -4,9 +4,6 @@ use derive_more::Display;
 
 use anyhow::{bail, Context, Result};
 
-/// # Errors
-///
-/// will return `Err` if the input does not match the expected day 20 input format.
 pub fn parse_input() -> Result<([bool; 512], Image)> {
     let mut lines = io::stdin().lines();
     let alg_str = lines.next().context("missing input")??;
@@ -21,8 +18,9 @@ pub fn parse_input() -> Result<([bool; 512], Image)> {
 
     let mut image = Image::default();
     for remaining_line in lines {
-        let mut row = Vec::new();
-        for c in remaining_line?.chars() {
+        let remaining_line = remaining_line?;
+        let mut row = Vec::with_capacity(remaining_line.len());
+        for c in remaining_line.chars() {
             row.push(c == '#');
         }
         image.rows.push(row);
@@ -75,10 +73,11 @@ impl Iterator for Neighbors {
                 y: self.center.y + self.y,
             });
 
-            self.x += 1;
-            if self.x > 1 {
+            if self.x == 1 {
                 self.x = -1;
                 self.y += 1;
+            } else {
+                self.x += 1;
             }
 
             res
@@ -108,8 +107,8 @@ impl Image {
             self.surrounded_by_true
         } else {
             self.rows
-                .get(point.y.unsigned_abs() as usize)
-                .and_then(|r| r.get(point.x.unsigned_abs() as usize).copied())
+                .get(point.y as usize)
+                .and_then(|r| r.get(point.x as usize).copied())
                 .unwrap_or(self.surrounded_by_true)
         }
     }
@@ -126,22 +125,19 @@ impl Image {
     }
 
     #[must_use]
-    /// # Panics
-    ///
-    /// will panic if `alg` is empty.
     pub fn enhance(&self, alg: &[bool]) -> Self {
         let (width, height) = self.dimensions();
         let mut new_img = Self {
+            rows: Vec::with_capacity(height+2),
             surrounded_by_true: if self.surrounded_by_true {
                 *alg.last().unwrap()
             } else {
                 *alg.first().unwrap()
             },
-            ..Self::default()
         };
 
         for y in -1..=i32::try_from(height).unwrap() {
-            let mut row = Vec::new();
+            let mut row = Vec::with_capacity(width+2);
             for x in -1..=i32::try_from(width).unwrap() {
                 let value = self.get_enhanced_px(Point::new(x, y), alg);
                 row.push(value);
@@ -154,7 +150,7 @@ impl Image {
     pub fn count(&self) -> usize {
         self.rows
             .iter()
-            .map(|r| r.iter().filter(|&&p| p).count())
+            .map(|r| r.iter().filter(|p| **p).count())
             .sum()
     }
 }

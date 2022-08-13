@@ -4,14 +4,15 @@ use derive_more::Display;
 
 use anyhow::{Context, Result};
 
-/// `ROLL_DIST[i]` = the number of universes in which the sum of three consecutive Dirac Dice rolls results in `i+3`.
-const BRANCH_DISTRIBUTION: &[u64; 7] = &[1, 3, 6, 7, 6, 3, 1];
+/// `BRANCH_DISTRIB[i]` = the number of universes in which the sum of three consecutive Dirac Dice rolls results in `i+3`.
+const BRANCH_DISTRIB: &[u64; 7] = &[1, 3, 6, 7, 6, 3, 1];
 
-#[derive(Display, PartialEq, Eq, Clone, Copy, Hash, Debug, PartialOrd, Ord)]
+#[derive(Display, PartialEq, Eq, Clone, Copy, Hash, Debug)]
 #[display(fmt = "pos: {}, score: {}", pos, score)]
 pub struct PlayerState {
     /// position on the board from 0 to 9
     pub pos: u8,
+
     pub score: u8,
 }
 
@@ -28,10 +29,6 @@ impl FromStr for PlayerState {
 }
 
 impl PlayerState {
-    pub fn at(pos: u8) -> Self {
-        Self { pos, score: 0 }
-    }
-
     pub fn branch(self) -> Branches {
         Branches::new(self)
     }
@@ -71,7 +68,7 @@ impl Iterator for Branches {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, Hash, Debug, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, Clone, Copy, Hash, Debug)]
 pub struct GameState {
     player1: PlayerState,
     player2: PlayerState,
@@ -84,13 +81,6 @@ pub enum Player {
 }
 
 impl GameState {
-    pub fn new(p1_pos: u8, p2_pos: u8) -> Self {
-        Self {
-            player1: PlayerState::at(p1_pos),
-            player2: PlayerState::at(p2_pos),
-        }
-    }
-
     pub fn get(&self, player: Player) -> &PlayerState {
         match player {
             Player::P1 => &self.player1,
@@ -135,7 +125,7 @@ impl Multiverse {
         for (game_state, count) in &self.state_counts {
             for (idx, branch) in game_state.get(player).branch().enumerate() {
                 // some branches happen more frequently than others. multiply the original count by the "probability" of this particular branch happening so that we can store all of those overlapping branches in the same spot while still counting all of them.
-                let new_count = count * BRANCH_DISTRIBUTION[idx];
+                let new_count = count * BRANCH_DISTRIB[idx];
 
                 // we don't need to store universes in which `player` won. count them and discard them.
                 if branch.score >= 21 {
